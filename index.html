@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill 集市 V2 - Agent X</title>
+<style>
+  :root {
+    --primary: #1677ff;
+    --primary-light: #e6f4ff;
+    --primary-dark: #0958d9;
+    --success: #52c41a;
+    --warning: #faad14;
+    --danger: #ff4d4f;
+    --text: #1f1f1f;
+    --text-secondary: #8c8c8c;
+    --text-tertiary: #bfbfbf;
+    --border: #f0f0f0;
+    --bg: #f5f7fa;
+    --bg-card: #ffffff;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-hover: 0 4px 16px rgba(0,0,0,0.1);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); }
+
+  /* Top Nav */
+  .top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 56px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .top-nav .logo { font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+  .top-nav .nav-tabs { display: flex; gap: 4px; margin-left: 40px; }
+  .top-nav .nav-tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--text-secondary); transition: all .2s; border: none; background: none; font-family: inherit; }
+  .top-nav .nav-tab:hover { color: var(--text); background: var(--bg); }
+  .top-nav .nav-tab.active { color: var(--primary); background: var(--primary-light); font-weight: 600; }
+  .top-nav .nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .top-nav .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #69b1ff); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  /* Common */
+  .page { display: none; padding: 80px 24px 40px; max-width: 1280px; margin: 0 auto; }
+  .page.active { display: block; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 14px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); transition: all .2s; font-family: inherit; }
+  .btn:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+  .btn-sm { padding: 4px 12px; font-size: 12px; }
+  .btn-lg { padding: 12px 24px; font-size: 16px; }
+  .btn-danger { color: var(--danger); border-color: var(--danger); }
+  .btn-danger:hover { background: #fff2f0; }
+  .tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .tag-blue { background: var(--primary-light); color: var(--primary); }
+  .tag-green { background: #f6ffed; color: var(--success); }
+  .tag-orange { background: #fffbe6; color: var(--warning); }
+  .tag-purple { background: #f9f0ff; color: #722ed1; }
+  .tag-gray { background: #f5f5f5; color: var(--text-secondary); }
+  .input-wrap { display: flex; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; transition: border-color .2s; }
+  .input-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+  .input-wrap input { flex: 1; border: none; outline: none; padding: 10px 14px; font-size: 14px; font-family: inherit; background: transparent; }
+  .input-wrap .input-icon { padding: 0 12px; color: var(--text-tertiary); font-size: 16px; }
+  select.form-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: #fff; color: var(--text); cursor: pointer; font-family: inherit; outline: none; }
+  textarea.form-textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; resize: vertical; outline: none; min-height: 120px; }
+  textarea.form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+  .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); transition: all .2s; }
+  .card:hover { box-shadow: var(--shadow-hover); }
+
+  /* ===== V2: Department Tabs ===== */
+  .dept-tabs { display: flex; gap: 6px; margin-bottom: 16px; padding: 4px; background: #fff; border-radius: 10px; box-shadow: var(--shadow); overflow-x: auto; }
+  .dept-tab { padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-secondary); transition: all .2s; border: none; background: none; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
+  .dept-tab:hover { color: var(--text); background: var(--bg); }
+  .dept-tab.active { color: #fff; background: var(--primary); font-weight: 600; }
+
+  /* Hero */
+  .hero-section { background: linear-gradient(135deg, #1677ff 0%, #69b1ff 50%, #91caff 100%); border-radius: 12px; padding: 24px 32px; color: #fff; margin-bottom: 16px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .hero-section::after { content: ''; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+  .hero-left { position: relative; z-index: 1; }
+  .hero-section h1 { font-size: 22px; margin-bottom: 4px; }
+  .hero-section p { font-size: 14px; opacity: .85; margin: 0; }
+  .hero-search { display: flex; max-width: 400px; position: relative; z-index: 1; flex-shrink: 0; }
+  .hero-search .input-wrap { flex: 1; border: none; border-radius: 8px 0 0 8px; }
+  .hero-search .input-wrap input { padding: 10px 14px; font-size: 14px; }
+  .hero-search .btn-primary { border-radius: 0 8px 8px 0; padding: 10px 20px; font-size: 14px; }
+
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-chip { padding: 4px 12px; border-radius: 16px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text-secondary); transition: all .2s; }
+  .filter-chip:hover, .filter-chip.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+  .market-body { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+  .market-main { min-width: 0; }
+  .market-sidebar { position: sticky; top: 76px; align-self: start; }
+
+  .skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .skill-card { cursor: pointer; position: relative; padding: 16px; }
+  .skill-card .skill-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .skill-card .skill-icon { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .skill-card .skill-info { flex: 1; }
+  .skill-card .skill-name { font-size: 14px; font-weight: 600; margin-bottom: 1px; }
+  .skill-card .skill-author { font-size: 11px; color: var(--text-secondary); }
+  .skill-card .skill-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .skill-card .skill-footer { display: flex; align-items: center; justify-content: space-between; }
+  .skill-card .skill-stats { display: flex; gap: 10px; font-size: 11px; color: var(--text-tertiary); }
+  .skill-card .skill-stats span { display: flex; align-items: center; gap: 3px; }
+  .skill-card .badge-vis { position: absolute; top: 10px; right: 10px; }
+  .skill-card .badge-vis .tag { font-size: 10px; padding: 1px 6px; }
+  .skill-card .channels-row { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
+  .skill-card .channel-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: #f5f5f5; color: var(--text-secondary); }
+
+  /* ===== V2: Share button on card ===== */
+  .skill-card .share-btn { margin-left: auto; padding: 2px 8px; font-size: 14px; cursor: pointer; border: none; background: none; color: var(--text-tertiary); border-radius: 4px; transition: all .15s; }
+  .skill-card .share-btn:hover { color: var(--primary); background: var(--primary-light); }
+
+  /* Ranking */
+  .ranking-card .ranking-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+  .ranking-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ranking-item:last-child { border-bottom: none; }
+  .ranking-item .rank-num { width: 22px; height: 22px; border-radius: 6px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #f5f5f5; color: var(--text-secondary); }
+  .ranking-item .rank-num.top1 { background: #fff7e6; color: #d48806; }
+  .ranking-item .rank-num.top2 { background: #f0f0f0; color: #595959; }
+  .ranking-item .rank-num.top3 { background: #fff2e8; color: #d4380d; }
+  .ranking-item .rank-name { flex: 1; font-weight: 500; }
+  .ranking-item .rank-val { color: var(--text-secondary); }
+
+  /* Detail */
+  .detail-header { display: flex; gap: 24px; align-items: flex-start; }
+  .detail-icon { width: 72px; height: 72px; border-radius: 16px; background: linear-gradient(135deg, #e6f4ff, #bae0ff); display: flex; align-items: center; justify-content: center; font-size: 36px; flex-shrink: 0; }
+  .detail-meta { flex: 1; }
+  .detail-meta h2 { font-size: 22px; margin-bottom: 8px; }
+  .detail-author { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+  .detail-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .detail-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.8; }
+  .detail-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+  .detail-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+  .stat-card { text-align: center; padding: 20px; }
+  .stat-card .stat-val { font-size: 24px; font-weight: 700; color: var(--primary); }
+  .stat-card .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+  .detail-content { margin-top: 24px; }
+  .detail-content-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .markdown-preview { padding: 24px; background: #fafafa; border-radius: var(--radius-sm); border: 1px solid var(--border); font-size: 14px; line-height: 1.8; color: var(--text); word-break: break-word; max-height: 600px; overflow-y: auto; }
+  .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 { margin: 16px 0 8px; color: var(--text); }
+  .markdown-preview h1 { font-size: 20px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+  .markdown-preview h2 { font-size: 17px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  .markdown-preview h3 { font-size: 15px; }
+  .markdown-preview p { margin-bottom: 8px; }
+  .markdown-preview ul, .markdown-preview ol { padding-left: 20px; margin-bottom: 8px; }
+  .markdown-preview code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  .markdown-preview pre { background: #1f1f1f; color: #f0f0f0; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; }
+  .markdown-preview pre code { background: none; padding: 0; color: inherit; }
+  .markdown-preview blockquote { border-left: 4px solid var(--primary); padding: 8px 16px; margin: 12px 0; background: var(--primary-light); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-secondary); }
+  .markdown-preview table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  .markdown-preview th, .markdown-preview td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+  .markdown-preview th { background: #f0f0f0; font-weight: 600; }
+  .markdown-preview img { max-width: 100%; border-radius: 8px; margin: 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .markdown-preview hr { border: none; border-top: 2px solid var(--border); margin: 20px 0; }
+
+  /* Upload */
+  .upload-file-info { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--primary-light); border: 1px solid var(--primary); border-radius: var(--radius-sm); margin-top: 12px; }
+  .upload-file-info .file-icon { font-size: 24px; }
+  .upload-file-info .file-detail { flex: 1; }
+  .upload-file-info .file-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .upload-file-info .file-size { font-size: 12px; color: var(--text-secondary); }
+  .upload-file-info .file-remove { cursor: pointer; color: var(--danger); font-size: 18px; padding: 4px; }
+  .upload-preview-section { margin-top: 16px; }
+  .upload-preview-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--primary); padding: 8px 0; }
+  .upload-form { max-width: 720px; margin: 0 auto; }
+  .form-section { margin-bottom: 32px; }
+  .form-section .form-label { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+  .form-section .form-label .required { color: var(--danger); }
+  .form-section .form-hint { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 48px; text-align: center; cursor: pointer; transition: all .2s; background: #fafafa; }
+  .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+  .upload-zone .upload-icon { font-size: 48px; color: var(--text-tertiary); margin-bottom: 12px; }
+  .upload-zone .upload-text { font-size: 14px; color: var(--text-secondary); }
+  .upload-zone .upload-hint { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
+  .perm-options { display: flex; gap: 12px; }
+  .perm-option { flex: 1; padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all .2s; text-align: center; }
+  .perm-option:hover { border-color: var(--primary); }
+  .perm-option.selected { border-color: var(--primary); background: var(--primary-light); }
+  .perm-option .perm-icon { font-size: 28px; margin-bottom: 8px; }
+  .perm-option .perm-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .perm-option .perm-desc { font-size: 12px; color: var(--text-secondary); }
+  .form-actions { display: flex; gap: 12px; justify-content: flex-end; padding-top: 24px; border-top: 1px solid var(--border); }
+
+  /* ===== V2: Department selector in upload ===== */
+  .dept-selector { margin-top: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fafafa; display: none; }
+  .dept-selector.show { display: block; }
+  .dept-selector .dept-label { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
+  .dept-check-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .dept-check-item { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .15s; background: #fff; }
+  .dept-check-item:hover { border-color: var(--primary); }
+  .dept-check-item.checked { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+  .dept-check-item input { display: none; }
+
+  /* ===== V2: Security scan indicator ===== */
+  .scan-indicator { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: var(--radius-sm); margin-top: 8px; font-size: 13px; }
+  .scan-indicator.scanning { background: #fffbe6; border: 1px solid #ffe58f; color: #d48806; }
+  .scan-indicator.passed { background: #f6ffed; border: 1px solid #b7eb8f; color: var(--success); }
+  .scan-indicator.failed { background: #fff2f0; border: 1px solid #ffccc7; color: var(--danger); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .scan-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ffe58f; border-top-color: #d48806; border-radius: 50%; animation: spin .8s linear infinite; }
+
+  /* ===== V2: File description for binary ===== */
+  .file-desc-section { margin-top: 16px; display: none; }
+  .file-desc-section.show { display: block; }
+
+  /* ===== V2: Download button in detail ===== */
+  .download-section { display: flex; align-items: center; gap: 16px; padding: 20px; background: #fafafa; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-top: 16px; }
+  .download-icon { font-size: 36px; }
+  .download-info { flex: 1; }
+  .download-info .file-name { font-size: 15px; font-weight: 600; }
+  .download-info .file-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* My Skills */
+  .my-tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+  .my-tab { padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--text-secondary); border: none; background: none; font-family: inherit; transition: all .2s; }
+  .my-tab:hover { color: var(--text); background: var(--bg); }
+  .my-tab.active { color: var(--primary); background: var(--primary-light); font-weight: 600; }
+  .my-panel { display: none; }
+  .my-panel.active { display: block; }
+  .my-skill-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; margin-bottom: 12px; }
+  .my-skill-item .my-skill-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .my-skill-item .my-skill-info { flex: 1; }
+  .my-skill-item .my-skill-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .my-skill-item .my-skill-meta { font-size: 12px; color: var(--text-secondary); }
+  .my-skill-item .my-skill-actions { display: flex; gap: 8px; }
+
+  /* Admin */
+  .admin-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; }
+  .admin-sidebar .sidebar-item { padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; color: var(--text-secondary); transition: all .2s; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .admin-sidebar .sidebar-item:hover { background: var(--bg); color: var(--text); }
+  .admin-sidebar .sidebar-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+  .dash-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .dash-stat { padding: 20px; }
+  .dash-stat .ds-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+  .dash-stat .ds-val { font-size: 28px; font-weight: 700; }
+  .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .admin-table th, .admin-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  .admin-table th { background: var(--bg); font-weight: 600; color: var(--text-secondary); font-size: 13px; }
+  .admin-table tr:hover { background: #fafafa; }
+  .status-dot { display: inline-flex; align-items: center; gap: 6px; }
+  .status-dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .status-dot.online::before { background: var(--success); }
+  .status-dot.offline::before { background: var(--text-tertiary); }
+
+  /* ===== V2: Share Modal ===== */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: #fff; border-radius: 16px; padding: 28px; width: 420px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+  .modal-close { cursor: pointer; font-size: 20px; color: var(--text-tertiary); border: none; background: none; padding: 4px; }
+  .modal-close:hover { color: var(--text); }
+  .share-option { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all .15s; margin-bottom: 10px; }
+  .share-option:hover { border-color: var(--primary); background: var(--primary-light); }
+  .share-option .share-icon { font-size: 28px; }
+  .share-option .share-label { font-size: 14px; font-weight: 600; }
+  .share-option .share-desc { font-size: 12px; color: var(--text-secondary); }
+
+  /* ===== V2: Share card preview ===== */
+  .share-preview { margin-top: 16px; padding: 16px; background: #f5f5f5; border-radius: 10px; }
+  .share-preview-title { font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px; }
+  .share-card-mock { background: #fff; border-radius: 8px; padding: 14px; border: 1px solid #e8e8e8; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .share-card-mock .sc-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .share-card-mock .sc-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+  .share-card-mock .sc-footer { font-size: 11px; color: var(--text-tertiary); display: flex; justify-content: space-between; }
+
+  /* ===== V2: Push config in admin ===== */
+  .push-group-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+  .push-group-item .pg-name { flex: 1; font-size: 14px; font-weight: 500; }
+  .push-group-item .pg-url { font-size: 11px; color: var(--text-tertiary); flex: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .push-form-row { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-end; }
+  .push-form-row .input-wrap { flex: 1; }
+  .push-skill-select { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .push-skill-chip { padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .15s; }
+  .push-skill-chip:hover { border-color: var(--primary); }
+  .push-skill-chip.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+  /* ===== V2: ActionCard preview ===== */
+  .actioncard-preview { background: #f5f5f5; border-radius: 10px; padding: 16px; margin-top: 16px; }
+  .actioncard-mock { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e8e8e8; max-width: 320px; }
+  .actioncard-mock .ac-header { background: var(--primary); color: #fff; padding: 10px 14px; font-size: 13px; font-weight: 600; }
+  .actioncard-mock .ac-body { padding: 14px; }
+  .actioncard-mock .ac-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .actioncard-mock .ac-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px; }
+  .actioncard-mock .ac-meta { font-size: 11px; color: var(--text-tertiary); margin-bottom: 12px; }
+  .actioncard-mock .ac-btn { display: block; text-align: center; padding: 10px; background: var(--primary); color: #fff; font-size: 14px; font-weight: 600; border: none; cursor: pointer; }
+
+  /* ===== V2: Role switch ===== */
+  .role-switch { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); background: var(--bg); padding: 3px 4px; border-radius: 6px; }
+  .role-switch .role-opt { padding: 3px 10px; border-radius: 4px; cursor: pointer; transition: all .15s; border: none; background: none; font-size: 12px; font-family: inherit; color: var(--text-secondary); }
+  .role-switch .role-opt.active { background: #fff; color: var(--primary); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+  @media (max-width: 768px) {
+    .hero-section { flex-direction: column; align-items: flex-start; }
+    .market-body { grid-template-columns: 1fr; }
+    .detail-header { flex-direction: column; }
+    .detail-stats-row { grid-template-columns: 1fr; }
+    .admin-layout { grid-template-columns: 1fr; }
+    .dash-stats { grid-template-columns: repeat(2, 1fr); }
+    .skill-grid { grid-template-columns: 1fr; }
+    .perm-options { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<nav class="top-nav">
+  <div class="logo"><span>⚡</span><span>Skill 集市</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('market')">🏪 集市</button>
+    <button class="nav-tab" onclick="switchPage('upload')">⬆️ 上传</button>
+    <button class="nav-tab" onclick="switchPage('my')">📂 我的</button>
+    <button class="nav-tab" onclick="switchPage('admin')">⚙️ 管理</button>
+  </div>
+  <div class="nav-right">
+    <div class="role-switch" title="Demo 角色切换">
+      <button class="role-opt active" onclick="switchRole('user')">👤 普通用户</button>
+      <button class="role-opt" onclick="switchRole('admin')">🛡️ 超管</button>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="switchPage('upload')">+ 发布 Skill</button>
+    <div class="avatar">雨</div>
+  </div>
+</nav>
+
+<!-- PAGE: 集市首页 -->
+<div id="page-market" class="page active">
+  <div class="hero-section">
+    <div class="hero-left">
+      <h1>🔍 发现适合你的 Skill</h1>
+      <p>物流域 Skill 集市 —— 让优秀的方法论触手可及</p>
+    </div>
+    <div class="hero-search">
+      <!-- V2: search placeholder updated to include author -->
+      <div class="input-wrap"><span class="input-icon">🔍</span><input type="text" id="search-input" placeholder="搜索 Skill 名称、描述、作者..." onkeyup="handleSearch(event)"></div>
+      <button class="btn btn-primary" onclick="doSearch()">搜索</button>
+    </div>
+  </div>
+
+  <!-- V2: Department Tabs (dynamically rendered by role) -->
+  <div class="dept-tabs" id="dept-tabs"></div>
+
+  <!-- Department indicator -->
+  <div id="dept-indicator" style="display:none;margin-bottom:12px;">
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:#f9f0ff;border:1px solid #d3adf7;border-radius:8px;font-size:13px;color:#722ed1;">
+      <span>🏢</span>
+      <span id="dept-indicator-text">当前查看：华南战区部门空间</span>
+      <span style="margin-left:auto;font-size:11px;color:#b37feb;">仅展示本部门可见的 Skill</span>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-chip active">全部</span>
+    <span class="filter-chip">📊 数据分析</span>
+    <span class="filter-chip">📋 项目管理</span>
+    <span class="filter-chip">🚚 配送运营</span>
+    <span class="filter-chip">📈 取数报表</span>
+    <span class="filter-chip">🗓️ 排班调度</span>
+    <span class="filter-chip">💡 方法论</span>
+    <span style="margin-left:auto;">
+      <select class="form-select"><option>最新发布</option><option>最多安装</option></select>
+    </span>
+  </div>
+
+  <div class="market-body">
+    <div class="market-main">
+      <!-- Search result hint -->
+      <div id="search-result-hint" style="display:none;margin-bottom:12px;padding:10px 16px;background:var(--primary-light);border-radius:8px;font-size:13px;color:var(--primary);"></div>
+
+      <!-- Public skills grid -->
+      <div class="skill-grid" id="skill-grid-public">
+        <div class="skill-card card" onclick="switchPage('detail')">
+          <span class="badge-vis"><span class="tag tag-green">公开</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#e6f4ff,#bae0ff);">📊</div><div class="skill-info"><div class="skill-name">金龟 BI 数据分析</div><div class="skill-author">金龟BI团队 · v2.1.0</div></div></div>
+          <div class="skill-desc">基于金龟 BI 分析方法论，自动完成多维数据取数、交叉分析、趋势洞察，支持自然语言查询数据。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 3,240</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">QD Work</span><span class="channel-tag">悟空</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('金龟 BI 数据分析','基于金龟 BI 分析方法论，自动完成多维数据取数、交叉分析、趋势洞察。','📊','金龟BI团队','3,240')" title="分享">↗️</button></div>
+        </div>
+        <div class="skill-card card" onclick="switchPage('detail')">
+          <span class="badge-vis"><span class="tag tag-green">公开</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#fffbe6,#ffe58f);">🐝</div><div class="skill-info"><div class="skill-name">金蜂鸟荣誉定推</div><div class="skill-author">雨洁 · v2.1</div></div></div>
+          <div class="skill-desc">自动读取金蜂鸟 Excel 数据，生成暗夜主题数据看板长图，一键推送图文消息到钉钉群。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 1,560</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">QD Work</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('金蜂鸟荣誉定推','自动读取金蜂鸟 Excel 数据，生成暗夜主题数据看板长图。','🐝','雨洁','1,560')" title="分享">↗️</button></div>
+        </div>
+        <div class="skill-card card" onclick="switchPage('detail')">
+          <span class="badge-vis"><span class="tag tag-green">公开</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#f6ffed,#d9f7be);">🚚</div><div class="skill-info"><div class="skill-name">驻送运营分析</div><div class="skill-author">安迪·驻送组 · v1.3.2</div></div></div>
+          <div class="skill-desc">驻送业务专属分析方法论，覆盖运力评估、时效分析、成本优化等核心场景。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 1,870</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">QD Work</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('驻送运营分析','驻送业务专属分析方法论，覆盖运力评估、时效分析。','🚚','安迪·驻送组','1,870')" title="分享">↗️</button></div>
+        </div>
+        <div class="skill-card card" onclick="switchPage('detail')">
+          <span class="badge-vis"><span class="tag tag-green">公开</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#fff7e6,#ffe58f);">📋</div><div class="skill-info"><div class="skill-name">战区项目做表助手</div><div class="skill-author">方群 · v3.0.1</div></div></div>
+          <div class="skill-desc">通用做表 Skill，适用于项目进度管理、数据看板搭建、周报自动生成。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 5,120</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">QD Work</span><span class="channel-tag">悟空</span><span class="channel-tag">小饿分身</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('战区项目做表助手','通用做表 Skill，适用于项目进度管理、数据看板搭建。','📋','方群','5,120')" title="分享">↗️</button></div>
+        </div>
+        <!-- V2: exe type skill card -->
+        <div class="skill-card card" onclick="switchPage('detail-exe')">
+          <span class="badge-vis"><span class="tag tag-green">公开</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#e6fffb,#87e8de);">🔧</div><div class="skill-info"><div class="skill-name">运力诊断工具</div><div class="skill-author">王凯 · v1.0.0</div></div></div>
+          <div class="skill-desc">一线运力异常自动诊断工具，支持快速定位运力缺口、异常波动原因，生成诊断报告。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 420</span><span style="color:var(--warning)">📦 .exe</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">本地工具</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('运力诊断工具','一线运力异常自动诊断工具，支持快速定位运力缺口。','🔧','王凯','420')" title="分享">↗️</button></div>
+        </div>
+        <div class="skill-card card" onclick="switchPage('detail')">
+          <span class="badge-vis"><span class="tag tag-green">公开</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#f0f5ff,#adc6ff);">📈</div><div class="skill-info"><div class="skill-name">运力分析报表</div><div class="skill-author">物流数据组 · v2.0.0</div></div></div>
+          <div class="skill-desc">自动拉取物流运力数据，生成区域运力分布、峰值预测、运力缺口分析报表。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 2,340</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">QD Work</span><span class="channel-tag">悟空</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('运力分析报表','自动拉取物流运力数据，生成运力分布分析报表。','📈','物流数据组','2,340')" title="分享">↗️</button></div>
+        </div>
+      </div>
+
+      <!-- V2: Department-specific skill grids (hidden by default) -->
+      <div class="skill-grid" id="skill-grid-dept" style="display:none;">
+        <div class="skill-card card" onclick="switchPage('detail')">
+          <span class="badge-vis"><span class="tag tag-purple">部门</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#f9f0ff,#d3adf7);">📊</div><div class="skill-info"><div class="skill-name">华南骑手提效分析</div><div class="skill-author">小明 · v1.2.0</div></div></div>
+          <div class="skill-desc">华南战区专属骑手人效分析模型，基于本地化数据优化的提效方案生成器。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 230</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">QD Work</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('华南骑手提效分析','华南战区专属骑手人效分析模型。','📊','小明','230')" title="分享">↗️</button></div>
+        </div>
+        <div class="skill-card card" onclick="switchPage('detail')">
+          <span class="badge-vis"><span class="tag tag-purple">部门</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#f9f0ff,#d3adf7);">🗺️</div><div class="skill-info"><div class="skill-name">华南区域运力热力图</div><div class="skill-author">陈静 · v1.0.0</div></div></div>
+          <div class="skill-desc">基于华南战区历史订单数据，生成运力热力分布图，辅助排班决策。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 85</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">QD Work</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('华南区域运力热力图','华南战区运力热力分布图生成工具。','🗺️','陈静','85')" title="分享">↗️</button></div>
+        </div>
+        <div class="skill-card card" onclick="switchPage('detail-exe')">
+          <span class="badge-vis"><span class="tag tag-purple">部门</span></span>
+          <div class="skill-header"><div class="skill-icon" style="background:linear-gradient(135deg,#f9f0ff,#d3adf7);">📦</div><div class="skill-info"><div class="skill-name">华南外单策略工具</div><div class="skill-author">外单运营部 · v2.0.0</div></div></div>
+          <div class="skill-desc">华南外单运营专属策略工具，涉及内部定价模型，仅限本部门使用。</div>
+          <div class="skill-footer"><div class="skill-stats"><span>📥 156</span><span style="color:var(--warning)">📦 .zip</span></div><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();handleInstall()">安装</button></div>
+          <div class="channels-row"><span class="channel-tag">本地工具</span><button class="share-btn" onclick="event.stopPropagation();openShareModal('华南外单策略工具','华南外单运营专属策略工具。','📦','外单运营部','156')" title="分享">↗️</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="market-sidebar">
+      <div class="ranking-card card">
+        <div class="ranking-title">🔥 安装排行</div>
+        <div class="ranking-item"><span class="rank-num top1">1</span><span class="rank-name">战区项目做表助手</span><span class="rank-val">5,120</span></div>
+        <div class="ranking-item"><span class="rank-num top2">2</span><span class="rank-name">金龟 BI 数据分析</span><span class="rank-val">3,240</span></div>
+        <div class="ranking-item"><span class="rank-num top3">3</span><span class="rank-name">运力分析报表</span><span class="rank-val">2,340</span></div>
+        <div class="ranking-item"><span class="rank-num">4</span><span class="rank-name">驻送运营分析</span><span class="rank-val">1,870</span></div>
+        <div class="ranking-item"><span class="rank-num">5</span><span class="rank-name">智能排班 Pro</span><span class="rank-val">890</span></div>
+      </div>
+      <div class="card" style="margin-top:12px;padding:16px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">📌 快速统计</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:2;">
+          Skill 总数：<strong style="color:var(--text);">1,247</strong><br>
+          本月新增：<strong style="color:var(--text);">186</strong><br>
+          总安装：<strong style="color:var(--text);">52.4K</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: Skill 详情 (Markdown类) -->
+<div id="page-detail" class="page">
+  <div style="margin-bottom:16px;"><span style="cursor:pointer;color:var(--primary);font-size:14px;" onclick="switchPage('market')">← 返回集市</span></div>
+  <div class="card" style="margin-bottom:24px;">
+    <div class="detail-header">
+      <div class="detail-icon" id="detail-icon">📊</div>
+      <div class="detail-meta">
+        <h2 id="detail-title">金龟 BI 数据分析</h2>
+        <div class="detail-author">金龟BI团队 · 最近更新 2026-04-25 · <span class="tag tag-green" style="margin-left:4px;">公开</span></div>
+        <div class="detail-tags"><span class="tag tag-blue">数据分析</span><span class="tag tag-blue">取数</span><span class="tag tag-blue">BI</span></div>
+        <div class="detail-desc">基于金龟 BI 分析方法论，自动完成多维数据取数、交叉分析、趋势洞察。支持自然语言查询数据，内置物流域知识库联动。</div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-primary btn-lg" onclick="handleInstall()">📥 一键安装</button>
+        <!-- V2: Share button on detail page -->
+        <button class="btn" onclick="openShareModal('金龟 BI 数据分析','基于金龟 BI 分析方法论，自动完成多维数据取数、交叉分析。','📊','金龟BI团队','3,240')">↗️ 分享到钉钉</button>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">安装后可在 QD Work、悟空 中使用</div>
+      </div>
+    </div>
+  </div>
+  <div class="detail-stats-row">
+    <div class="stat-card card"><div class="stat-val">3,240</div><div class="stat-label">总安装次数</div></div>
+    <div class="stat-card card"><div class="stat-val">v2.1.0</div><div class="stat-label">当前版本</div></div>
+    <div class="stat-card card"><div class="stat-val">2026-01-15</div><div class="stat-label">首次发布</div></div>
+  </div>
+  <div class="detail-content card">
+    <div class="detail-content-title">📄 Skill 内容预览</div>
+    <div class="markdown-preview"><h1>金龟 BI 数据分析</h1><h2>概述</h2><p>本 Skill 基于金龟 BI 分析方法论，帮助你快速完成多维数据取数、交叉分析和趋势洞察。</p><h2>核心能力</h2><ul><li>自然语言查询数据：直接用中文描述你想要的数据</li><li>多维交叉分析：自动识别关键维度进行交叉对比</li><li>趋势洞察：识别数据变化趋势并生成分析结论</li></ul><h2>使用方式</h2><p>安装后，在对话框中直接输入你的数据需求即可。</p></div>
+  </div>
+</div>
+
+<!-- V2 PAGE: Skill 详情 (exe/zip类) -->
+<div id="page-detail-exe" class="page">
+  <div style="margin-bottom:16px;"><span style="cursor:pointer;color:var(--primary);font-size:14px;" onclick="switchPage('market')">← 返回集市</span></div>
+  <div class="card" style="margin-bottom:24px;">
+    <div class="detail-header">
+      <div class="detail-icon" style="background:linear-gradient(135deg,#e6fffb,#87e8de);">🔧</div>
+      <div class="detail-meta">
+        <h2>运力诊断工具</h2>
+        <div class="detail-author">王凯 · 最近更新 2026-06-20 · <span class="tag tag-green" style="margin-left:4px;">公开</span> · <span class="tag tag-orange" style="margin-left:4px;">📦 .exe</span></div>
+        <div class="detail-tags"><span class="tag tag-blue">诊断</span><span class="tag tag-blue">运力</span><span class="tag tag-blue">工具</span></div>
+        <div class="detail-desc">一线运力异常自动诊断工具，支持快速定位运力缺口、异常波动原因，生成诊断报告。适用于城市站长和战区运营。</div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-primary btn-lg" onclick="handleInstall()">📥 下载安装</button>
+        <button class="btn" onclick="openShareModal('运力诊断工具','一线运力异常自动诊断工具，支持快速定位运力缺口。','🔧','王凯','420')">↗️ 分享到钉钉</button>
+      </div>
+    </div>
+  </div>
+  <div class="detail-stats-row">
+    <div class="stat-card card"><div class="stat-val">420</div><div class="stat-label">总安装次数</div></div>
+    <div class="stat-card card"><div class="stat-val">v1.0.0</div><div class="stat-label">当前版本</div></div>
+    <div class="stat-card card"><div class="stat-val">2026-06-15</div><div class="stat-label">首次发布</div></div>
+  </div>
+  <!-- V2: Download section for exe/zip -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="detail-content-title">📦 文件下载</div>
+    <div class="download-section">
+      <div class="download-icon">💾</div>
+      <div class="download-info">
+        <div class="file-name">运力诊断工具.exe</div>
+        <div class="file-meta">52.3 MB · 已通过安全扫描 ✅ · 上传于 2026-06-20</div>
+      </div>
+      <button class="btn btn-primary" onclick="alert('✅ 下载已开始！')">⬇️ 下载文件</button>
+    </div>
+  </div>
+  <div class="detail-content card">
+    <div class="detail-content-title">📄 使用说明</div>
+    <div class="markdown-preview">
+      <h2>运力诊断工具 使用说明</h2>
+      <h3>系统要求</h3>
+      <ul><li>Windows 10 及以上</li><li>内存 4GB+</li><li>需连接公司内网</li></ul>
+      <h3>安装步骤</h3>
+      <ol><li>下载 .exe 文件到本地</li><li>双击运行，按提示完成安装</li><li>首次运行需使用工号登录</li></ol>
+      <h3>核心功能</h3>
+      <ul><li><strong>运力缺口诊断</strong>：输入城市和时间段，自动分析运力缺口</li><li><strong>异常波动定位</strong>：对比历史数据，定位波动根因</li><li><strong>报告生成</strong>：一键生成 PDF 格式诊断报告</li></ul>
+      <h3>常见问题</h3>
+      <p>Q: 打开提示"无法连接数据库"？<br>A: 请确认已连接公司 VPN 或内网。</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: 上传 Skill -->
+<div id="page-upload" class="page">
+  <div class="upload-form">
+    <h2 style="margin-bottom:8px;">📤 发布新 Skill</h2>
+    <p style="color:var(--text-secondary);font-size:14px;margin-bottom:32px;">将你的分析方法论、运营流程、工具封装成 Skill，分享给更多同学使用</p>
+
+    <div class="form-section">
+      <div class="form-label"><span class="required">*</span> Skill 文件</div>
+      <!-- V2: Updated accept to include exe/zip -->
+      <input type="file" id="skill-file-input" accept=".md,.txt,.markdown,.exe,.zip" style="display:none;" onchange="handleFileUpload(event)">
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('skill-file-input').click()">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">点击或拖拽上传 Skill 文件</div>
+        <!-- V2: Updated hint -->
+        <div class="upload-hint">支持 .md / .txt / .exe / .zip 格式，单文件最大 100MB</div>
+      </div>
+      <div id="upload-file-info" style="display:none;"></div>
+      <!-- V2: Security scan indicator -->
+      <div id="scan-indicator" style="display:none;"></div>
+      <div class="form-hint">上传后自动进行安全扫描，扫描通过后方可发布</div>
+
+      <!-- V2: Preview section for md/txt -->
+      <div id="upload-preview-section" class="upload-preview-section" style="display:none;">
+        <div class="upload-preview-toggle" onclick="toggleUploadPreview()"><span id="preview-arrow">▶</span> 预览解析内容</div>
+        <div id="upload-preview-content" style="display:none;"><div class="markdown-preview" id="upload-markdown-preview"></div></div>
+      </div>
+
+      <!-- V2: File description section for exe/zip -->
+      <div id="file-desc-section" class="file-desc-section">
+        <div class="form-label"><span class="required">*</span> 文件使用说明</div>
+        <textarea class="form-textarea" id="file-desc-textarea" placeholder="请详细描述此文件的用途、安装方式、运行环境要求等，用户将在详情页看到此说明..."></textarea>
+        <div class="form-hint">上传 .exe / .zip 文件时必须填写使用说明，帮助用户了解如何安装和使用</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label"><span class="required">*</span> Skill 名称</div>
+      <div class="input-wrap"><input type="text" placeholder="如：金龟 BI 数据分析、运力诊断工具"></div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label"><span class="required">*</span> Skill 描述</div>
+      <textarea class="form-textarea" placeholder="简要描述此 Skill 解决什么问题、适用场景、核心功能..."></textarea>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label"><span class="required">*</span> 分类</div>
+      <select class="form-select">
+        <option value="">请选择分类</option>
+        <option>数据分析</option><option>项目管理</option><option>配送运营</option><option>取数报表</option><option>排班调度</option><option>方法论</option>
+      </select>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">标签</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+        <span class="tag tag-blue">数据分析 ×</span>
+        <span class="tag tag-blue">取数 ×</span>
+        <div class="input-wrap" style="width:160px;"><input type="text" placeholder="添加标签..."></div>
+      </div>
+      <div class="form-hint">最多添加 5 个标签</div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">版本号</div>
+      <div class="input-wrap" style="width:200px;"><input type="text" placeholder="v1.0.0" value="v1.0.0"></div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label"><span class="required">*</span> 权限设置</div>
+      <!-- V2: Added department option -->
+      <div class="perm-options">
+        <div class="perm-option selected" onclick="selectPerm(this,'public')"><div class="perm-icon">🌐</div><div class="perm-name">公开</div><div class="perm-desc">所有物流域同学可见可用</div></div>
+        <div class="perm-option" onclick="selectPerm(this,'department')"><div class="perm-icon">🏢</div><div class="perm-name">部门可见</div><div class="perm-desc">仅指定部门成员可见</div></div>
+        <div class="perm-option" onclick="selectPerm(this,'private')"><div class="perm-icon">🔒</div><div class="perm-name">私有</div><div class="perm-desc">仅自己可见</div></div>
+      </div>
+      <!-- V2: Department selector -->
+      <div id="dept-selector" class="dept-selector">
+        <div class="dept-label">选择可见部门（可多选）：</div>
+        <div class="dept-check-list">
+          <label class="dept-check-item checked" onclick="this.classList.toggle('checked')"><input type="checkbox" checked> 🌴 华南战区</label>
+          <label class="dept-check-item" onclick="this.classList.toggle('checked')"><input type="checkbox"> 🏔️ 中南战区</label>
+          <label class="dept-check-item" onclick="this.classList.toggle('checked')"><input type="checkbox"> 🌾 华中战区</label>
+          <label class="dept-check-item" onclick="this.classList.toggle('checked')"><input type="checkbox"> ⚙️ 运营中台</label>
+          <label class="dept-check-item" onclick="this.classList.toggle('checked')"><input type="checkbox"> 📊 BI 女娲</label>
+          <label class="dept-check-item" onclick="this.classList.toggle('checked')"><input type="checkbox"> 🏗️ 安迪团队</label>
+          <label class="dept-check-item" onclick="this.classList.toggle('checked')"><input type="checkbox"> 📋 国强团队</label>
+        </div>
+        <div class="form-hint" style="margin-top:8px;">默认选中你所在的部门，可手动添加其他部门</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">分发渠道</div>
+      <div style="display:flex;gap:12px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;"><input type="checkbox" checked> QD Work</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;"><input type="checkbox" checked> 悟空</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;"><input type="checkbox"> 小饿分身</label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">适用角色</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="filter-chip active">BI 分析师</span>
+        <span class="filter-chip">运营中台</span>
+        <span class="filter-chip">战区运营</span>
+        <span class="filter-chip active">众包经理</span>
+        <span class="filter-chip">城市经理</span>
+        <span class="filter-chip">配送站长</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary btn-lg" onclick="handlePublishSkill()">🚀 发布 Skill</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: 我的 Skill -->
+<div id="page-my" class="page">
+  <h2 style="margin-bottom:24px;">📂 我的 Skill</h2>
+  <div class="my-tabs">
+    <button class="my-tab active" onclick="switchMyTab('uploaded')">我上传的</button>
+    <button class="my-tab" onclick="switchMyTab('installed')">我安装的</button>
+  </div>
+  <div id="my-uploaded" class="my-panel active">
+    <div class="my-skill-item card">
+      <div class="my-skill-icon" style="background:linear-gradient(135deg,#e6f4ff,#bae0ff);">📊</div>
+      <div class="my-skill-info"><div class="my-skill-name">金龟 BI 数据分析</div><div class="my-skill-meta">v2.1.0 · 公开 · 3,240 次安装</div></div>
+      <div class="my-skill-actions"><span class="status-dot online">在线</span><button class="btn btn-sm">编辑</button><button class="btn btn-sm btn-danger">下线</button></div>
+    </div>
+    <div class="my-skill-item card">
+      <div class="my-skill-icon" style="background:linear-gradient(135deg,#e6fffb,#87e8de);">🔧</div>
+      <div class="my-skill-info"><div class="my-skill-name">运力诊断工具</div><div class="my-skill-meta">v1.0.0 · 公开 · 420 次安装 · <span class="tag tag-orange" style="font-size:10px;">exe</span></div></div>
+      <div class="my-skill-actions"><span class="status-dot online">在线</span><button class="btn btn-sm">编辑</button><button class="btn btn-sm btn-danger">下线</button></div>
+    </div>
+    <div class="my-skill-item card">
+      <div class="my-skill-icon" style="background:linear-gradient(135deg,#f9f0ff,#d3adf7);">📊</div>
+      <div class="my-skill-info"><div class="my-skill-name">华南骑手提效分析</div><div class="my-skill-meta">v1.2.0 · <span class="tag tag-purple" style="font-size:10px;">部门可见</span> · 230 次安装</div></div>
+      <div class="my-skill-actions"><span class="status-dot online">在线</span><button class="btn btn-sm">编辑</button><button class="btn btn-sm btn-danger">下线</button></div>
+    </div>
+  </div>
+  <div id="my-installed" class="my-panel">
+    <div class="my-skill-item card">
+      <div class="my-skill-icon" style="background:linear-gradient(135deg,#f6ffed,#d9f7be);">🚚</div>
+      <div class="my-skill-info"><div class="my-skill-name">驻送运营分析</div><div class="my-skill-meta">by 安迪·驻送组 · 安装于 2026-04-20</div></div>
+      <div class="my-skill-actions"><button class="btn btn-sm" onclick="switchPage('detail')">查看</button><button class="btn btn-sm btn-danger">卸载</button></div>
+    </div>
+    <div class="my-skill-item card">
+      <div class="my-skill-icon" style="background:linear-gradient(135deg,#e6fffb,#87e8de);">🔧</div>
+      <div class="my-skill-info"><div class="my-skill-name">运力诊断工具</div><div class="my-skill-meta">by 王凯 · 安装于 2026-06-21 · <span class="tag tag-orange" style="font-size:10px;">exe</span></div></div>
+      <div class="my-skill-actions"><button class="btn btn-sm" onclick="switchPage('detail-exe')">查看</button><button class="btn btn-sm btn-danger">卸载</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: 管理后台 -->
+<div id="page-admin" class="page">
+  <h2 style="margin-bottom:24px;">⚙️ Skill 管理后台</h2>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div class="card" style="padding:12px;">
+        <div class="sidebar-item active" onclick="switchAdminTab('dashboard')">📊 数据看板</div>
+        <div class="sidebar-item" onclick="switchAdminTab('lifecycle')">🔄 上下线管理</div>
+        <!-- V2: Push config -->
+        <div class="sidebar-item" onclick="switchAdminTab('push')">📢 推广推送</div>
+      </div>
+    </div>
+    <div class="admin-content">
+      <!-- Dashboard -->
+      <div id="admin-dashboard" class="admin-panel" style="display:block;">
+        <div class="dash-stats">
+          <div class="dash-stat card"><div class="ds-label">Skill 总数</div><div class="ds-val">1,247</div></div>
+          <div class="dash-stat card"><div class="ds-label">本月新增</div><div class="ds-val">186</div></div>
+          <div class="dash-stat card"><div class="ds-label">总安装次数</div><div class="ds-val">52.4K</div></div>
+          <div class="dash-stat card"><div class="ds-label">活跃贡献者</div><div class="ds-val">328</div></div>
+        </div>
+      </div>
+      <!-- Lifecycle -->
+      <div id="admin-lifecycle" class="admin-panel" style="display:none;">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-size:15px;font-weight:600;">Skill 上下线管理</div>
+            <div style="display:flex;gap:8px;">
+              <select class="form-select"><option>全部状态</option><option>在线</option><option>已下线</option></select>
+              <div class="input-wrap" style="width:200px;"><input type="text" placeholder="搜索 Skill..."></div>
+            </div>
+          </div>
+          <table class="admin-table">
+            <thead><tr><th>Skill 名称</th><th>版本</th><th>作者</th><th>可见性</th><th>文件类型</th><th>状态</th><th>安装数</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>金龟 BI 数据分析</td><td>v2.1.0</td><td>金龟BI团队</td><td><span class="tag tag-green">公开</span></td><td>.md</td><td><span class="status-dot online">在线</span></td><td>3,240</td><td><button class="btn btn-sm btn-danger">下线</button></td></tr>
+              <tr><td>运力诊断工具</td><td>v1.0.0</td><td>王凯</td><td><span class="tag tag-green">公开</span></td><td><span class="tag tag-orange">.exe</span></td><td><span class="status-dot online">在线</span></td><td>420</td><td><button class="btn btn-sm btn-danger">下线</button></td></tr>
+              <tr><td>华南骑手提效分析</td><td>v1.2.0</td><td>小明</td><td><span class="tag tag-purple">部门</span></td><td>.md</td><td><span class="status-dot online">在线</span></td><td>230</td><td><button class="btn btn-sm btn-danger">下线</button></td></tr>
+              <tr><td>华南外单策略工具</td><td>v2.0.0</td><td>外单运营部</td><td><span class="tag tag-purple">部门</span></td><td><span class="tag tag-orange">.zip</span></td><td><span class="status-dot online">在线</span></td><td>156</td><td><button class="btn btn-sm btn-danger">下线</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- V2: Push config panel -->
+      <div id="admin-push" class="admin-panel" style="display:none;">
+        <div class="card" style="margin-bottom:20px;">
+          <div style="font-size:15px;font-weight:600;margin-bottom:16px;">📢 推广推送</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;">选择 Skill 和目标群，通过钉钉机器人向战区群推送 ActionCard 消息。</p>
+
+          <div style="font-size:14px;font-weight:600;margin-bottom:10px;">1. 选择要推广的 Skill</div>
+          <div class="push-skill-select">
+            <span class="push-skill-chip selected" onclick="this.classList.toggle('selected')">📊 金龟 BI 数据分析</span>
+            <span class="push-skill-chip" onclick="this.classList.toggle('selected')">🐝 金蜂鸟荣誉定推</span>
+            <span class="push-skill-chip" onclick="this.classList.toggle('selected')">🔧 运力诊断工具</span>
+            <span class="push-skill-chip selected" onclick="this.classList.toggle('selected')">📋 战区项目做表助手</span>
+            <span class="push-skill-chip" onclick="this.classList.toggle('selected')">🚚 驻送运营分析</span>
+          </div>
+
+          <div style="font-size:14px;font-weight:600;margin-bottom:10px;">2. 选择目标群</div>
+          <div style="margin-bottom:16px;">
+            <div class="push-group-item">
+              <input type="checkbox" checked>
+              <span class="pg-name">华南战区运营群</span>
+              <span class="pg-url">https://oapi.dingtalk.com/robot/send?access_token=abc***</span>
+            </div>
+            <div class="push-group-item">
+              <input type="checkbox" checked>
+              <span class="pg-name">中南战区运营群</span>
+              <span class="pg-url">https://oapi.dingtalk.com/robot/send?access_token=def***</span>
+            </div>
+            <div class="push-group-item">
+              <input type="checkbox">
+              <span class="pg-name">Skill 集市交流群</span>
+              <span class="pg-url">https://oapi.dingtalk.com/robot/send?access_token=ghi***</span>
+            </div>
+          </div>
+          <div class="push-form-row">
+            <div class="input-wrap"><input type="text" placeholder="添加新群：输入群名称"></div>
+            <div class="input-wrap"><input type="text" placeholder="粘贴 Webhook 地址"></div>
+            <button class="btn btn-sm">+ 添加</button>
+          </div>
+
+          <div style="font-size:14px;font-weight:600;margin-bottom:10px;">3. 推送文案（可选）</div>
+          <textarea class="form-textarea" style="min-height:60px;" placeholder="自定义推送语，如：本周优质 Skill 推荐，快来安装试试！（留空则使用默认文案）"></textarea>
+
+          <div class="actioncard-preview">
+            <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;">消息预览 · ActionCard</div>
+            <div class="actioncard-mock">
+              <div class="ac-header">🌟 优质 Skill 推荐</div>
+              <div class="ac-body">
+                <div class="ac-title">📊 金龟 BI 数据分析</div>
+                <div class="ac-desc">基于金龟 BI 分析方法论，自动完成多维数据取数、交叉分析、趋势洞察。</div>
+                <div class="ac-meta">👤 金龟BI团队 · 📥 3,240 次安装</div>
+              </div>
+              <div class="ac-btn">立即安装 →</div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end;">
+            <button class="btn" onclick="alert('预览推送消息')">👁️ 预览</button>
+            <button class="btn btn-primary" onclick="alert('✅ 推送成功！已发送到 2 个群。')">📢 确认推送</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:15px;font-weight:600;margin-bottom:12px;">📋 推送历史</div>
+          <table class="admin-table">
+            <thead><tr><th>时间</th><th>推送 Skill</th><th>目标群</th><th>操作人</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td>2026-06-20 10:30</td><td>金龟 BI 数据分析、战区项目做表助手</td><td>华南战区群、中南战区群</td><td>雨洁</td><td><span class="tag tag-green">成功</span></td></tr>
+              <tr><td>2026-06-18 14:00</td><td>金蜂鸟荣誉定推</td><td>Skill 集市交流群</td><td>雨洁</td><td><span class="tag tag-green">成功</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- V2: Share Modal -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>↗️ 分享到钉钉</span>
+      <button class="modal-close" onclick="closeShareModal()">✕</button>
+    </div>
+    <div class="share-option" onclick="alert('📱 正在唤起钉钉分享...\n\n已发送链接卡片到选定的个人/群聊。')">
+      <div class="share-icon">💬</div>
+      <div>
+        <div class="share-label">分享到聊天</div>
+        <div class="share-desc">发送链接卡片到钉钉个人对话或群聊</div>
+      </div>
+    </div>
+    <div class="share-option" onclick="copyShareLink()">
+      <div class="share-icon">🔗</div>
+      <div>
+        <div class="share-label">复制链接</div>
+        <div class="share-desc">复制 Skill 详情页链接</div>
+      </div>
+    </div>
+    <div class="share-preview">
+      <div class="share-preview-title">卡片预览</div>
+      <div class="share-card-mock">
+        <div class="sc-title" id="share-card-title">📊 金龟 BI 数据分析</div>
+        <div class="sc-desc" id="share-card-desc">基于金龟 BI 分析方法论，自动完成多维数据取数、交叉分析。</div>
+        <div class="sc-footer">
+          <span id="share-card-author">👤 金龟BI团队 · 📥 3,240 次安装</span>
+          <span>来自 Skill 集市</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var uploadedMarkdown = '';
+var uploadedFileName = '';
+var uploadPreviewOpen = false;
+var currentFileType = 'text';
+var currentRole = 'user';
+
+// All departments from XuanYuan org
+var allDepts = [
+  {id:'huanan', label:'🌴 华南战区'},
+  {id:'zhongnan', label:'🏔️ 中南战区'},
+  {id:'ops', label:'⚙️ 运营中台'},
+  {id:'huazhong', label:'🌾 华中战区'},
+  {id:'bi', label:'📊 BI 女娲'}
+];
+// Current user's department (simulated from XuanYuan SSO)
+var userDepts = [{id:'ops', label:'⚙️ 运营中台'}];
+
+// ===== V2: Role Switch =====
+function switchRole(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-switch .role-opt').forEach(function(b) { b.classList.remove('active'); });
+  event.target.classList.add('active');
+  renderDeptTabs();
+  // reset to public tab
+  var firstTab = document.querySelector('.dept-tab');
+  if (firstTab) switchDept(firstTab, 'all');
+}
+
+// ===== V2: Render Department Tabs by Role =====
+function renderDeptTabs() {
+  var container = document.getElementById('dept-tabs');
+  var depts = (currentRole === 'admin') ? allDepts : userDepts;
+  var html = '<button class="dept-tab active" onclick="switchDept(this,\'all\')">🏪 公共集市</button>';
+  depts.forEach(function(d) {
+    html += '<button class="dept-tab" onclick="switchDept(this,\'' + d.id + '\')">' + d.label + '</button>';
+  });
+  container.innerHTML = html;
+}
+
+// ===== V2: Department Tab Switch =====
+function switchDept(el, deptId) {
+  document.querySelectorAll('.dept-tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var indicator = document.getElementById('dept-indicator');
+  var publicGrid = document.getElementById('skill-grid-public');
+  var deptGrid = document.getElementById('skill-grid-dept');
+  if (deptId === 'all') {
+    indicator.style.display = 'none';
+    publicGrid.style.display = '';
+    deptGrid.style.display = 'none';
+  } else {
+    var names = {huanan:'华南战区',zhongnan:'中南战区',ops:'运营中台',huazhong:'华中战区',bi:'BI 女娲'};
+    document.getElementById('dept-indicator-text').textContent = '当前查看：' + (names[deptId]||deptId) + ' 部门空间';
+    indicator.style.display = '';
+    publicGrid.style.display = 'none';
+    deptGrid.style.display = '';
+  }
+}
+
+// Init dept tabs on load
+document.addEventListener('DOMContentLoaded', function() { renderDeptTabs(); });
+
+// ===== V2: Search with author matching =====
+function handleSearch(e) { if (e.key === 'Enter') doSearch(); }
+function doSearch() {
+  var q = document.getElementById('search-input').value.trim();
+  var hint = document.getElementById('search-result-hint');
+  if (!q) { hint.style.display = 'none'; return; }
+  hint.style.display = 'block';
+  hint.innerHTML = '🔍 搜索「<strong>' + q + '</strong>」的结果 —— 匹配 Skill 名称、描述、<span style="color:var(--primary-dark);font-weight:600;">作者</span>';
+}
+
+// ===== V2: Share Modal =====
+function openShareModal(name, desc, icon, author, installs) {
+  document.getElementById('share-card-title').textContent = icon + ' ' + name;
+  document.getElementById('share-card-desc').textContent = desc;
+  document.getElementById('share-card-author').textContent = '👤 ' + author + ' · 📥 ' + installs + ' 次安装';
+  document.getElementById('share-modal').classList.add('show');
+}
+function closeShareModal() { document.getElementById('share-modal').classList.remove('show'); }
+function copyShareLink() { alert('✅ 链接已复制到剪贴板！\n\nhttps://xy.ele.me/xesm/skill/1001'); closeShareModal(); }
+document.getElementById('share-modal').addEventListener('click', function(e) { if (e.target === this) closeShareModal(); });
+
+// ===== V2: Permission selector with department =====
+function selectPerm(el, type) {
+  document.querySelectorAll('.perm-option').forEach(function(o) { o.classList.remove('selected'); });
+  el.classList.add('selected');
+  var deptSel = document.getElementById('dept-selector');
+  deptSel.className = 'dept-selector' + (type === 'department' ? ' show' : '');
+}
+
+// ===== V2: File upload with exe/zip + security scan =====
+function handleFileUpload(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var validExts = ['.md','.txt','.markdown','.exe','.zip'];
+  var ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+  if (validExts.indexOf(ext) === -1) { alert('❌ 不支持的文件格式\n\n支持：.md / .txt / .exe / .zip'); return; }
+  if (file.size > 100 * 1024 * 1024) { alert('❌ 文件过大，最大支持 100MB'); return; }
+
+  var isBinary = (ext === '.exe' || ext === '.zip');
+  currentFileType = isBinary ? 'binary' : 'text';
+  var fileIcon = isBinary ? (ext === '.exe' ? '💾' : '📦') : '📄';
+  var fileSize = file.size < 1024 ? file.size + ' B' : file.size < 1048576 ? (file.size / 1024).toFixed(1) + ' KB' : (file.size / 1048576).toFixed(1) + ' MB';
+
+  document.getElementById('upload-file-info').style.display = 'block';
+  document.getElementById('upload-file-info').innerHTML =
+    '<div class="upload-file-info"><span class="file-icon">' + fileIcon + '</span>' +
+    '<div class="file-detail"><div class="file-name">' + escapeHtml(file.name) + '</div><div class="file-size">' + fileSize + '</div></div>' +
+    '<span class="file-remove" onclick="removeUploadedFile()">✕</span></div>';
+  document.getElementById('upload-zone').style.display = 'none';
+
+  // Security scan simulation
+  var scanEl = document.getElementById('scan-indicator');
+  scanEl.style.display = 'block';
+  scanEl.className = 'scan-indicator scanning';
+  scanEl.innerHTML = '<span class="scan-spinner"></span> 安全检测中，请稍候...';
+  setTimeout(function() {
+    scanEl.className = 'scan-indicator passed';
+    scanEl.innerHTML = '🛡️ 安全检测通过 · 未发现威胁';
+  }, 2000);
+
+  if (isBinary) {
+    document.getElementById('file-desc-section').classList.add('show');
+    document.getElementById('upload-preview-section').style.display = 'none';
+    uploadedMarkdown = '';
+  } else {
+    document.getElementById('file-desc-section').classList.remove('show');
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      uploadedMarkdown = e.target.result;
+      uploadedFileName = file.name;
+      document.getElementById('upload-preview-section').style.display = 'block';
+      document.getElementById('upload-markdown-preview').innerHTML = parseMarkdown(uploadedMarkdown);
+    };
+    reader.readAsText(file);
+  }
+  uploadedFileName = file.name;
+}
+
+function removeUploadedFile() {
+  uploadedMarkdown = ''; uploadedFileName = ''; currentFileType = 'text';
+  document.getElementById('upload-file-info').style.display = 'none';
+  document.getElementById('upload-zone').style.display = '';
+  document.getElementById('upload-preview-section').style.display = 'none';
+  document.getElementById('scan-indicator').style.display = 'none';
+  document.getElementById('file-desc-section').classList.remove('show');
+  document.getElementById('skill-file-input').value = '';
+}
+
+function toggleUploadPreview() {
+  uploadPreviewOpen = !uploadPreviewOpen;
+  document.getElementById('upload-preview-content').style.display = uploadPreviewOpen ? 'block' : 'none';
+  document.getElementById('preview-arrow').textContent = uploadPreviewOpen ? '▼' : '▶';
+}
+
+function handlePublishSkill() {
+  if (!uploadedFileName) { alert('⚠️ 请先上传 Skill 文件'); return; }
+  if (currentFileType === 'binary') {
+    var desc = document.getElementById('file-desc-textarea').value.trim();
+    if (!desc) { alert('⚠️ 上传 exe/zip 文件时，必须填写文件使用说明'); return; }
+  }
+  alert('✅ 发布成功！Skill 已上线。');
+  switchPage('market');
+}
+
+// ===== Markdown Parser (simplified) =====
+function parseMarkdown(md) {
+  var html = '', lines = md.split('\n'), inCode = false, code = '', inList = false, lt = '';
+  for (var i = 0; i < lines.length; i++) {
+    var l = lines[i];
+    if (l.trim().match(/^```/)) { if (inCode) { html += '<pre><code>' + escapeHtml(code.trim()) + '</code></pre>'; code = ''; } inCode = !inCode; continue; }
+    if (inCode) { code += l + '\n'; continue; }
+    if (l.trim() === '') { if (inList) { html += '</' + lt + '>'; inList = false; } continue; }
+    var hm = l.match(/^(#{1,3})\s+(.+)/);
+    if (hm) { if (inList) { html += '</' + lt + '>'; inList = false; } html += '<h' + hm[1].length + '>' + parseInline(hm[2]) + '</h' + hm[1].length + '>'; continue; }
+    if (l.trim().match(/^[-*]\s+/)) { if (!inList) { html += '<ul>'; inList = true; lt = 'ul'; } html += '<li>' + parseInline(l.trim().replace(/^[-*]\s+/,'')) + '</li>'; continue; }
+    if (l.trim().match(/^\d+\.\s+/)) { if (!inList) { html += '<ol>'; inList = true; lt = 'ol'; } html += '<li>' + parseInline(l.trim().replace(/^\d+\.\s+/,'')) + '</li>'; continue; }
+    if (inList) { html += '</' + lt + '>'; inList = false; }
+    if (l.trim().match(/^>\s?/)) { html += '<blockquote>' + parseInline(l.trim().replace(/^>\s?/,'')) + '</blockquote>'; continue; }
+    if (l.trim().match(/^(-{3,}|\*{3,})$/)) { html += '<hr>'; continue; }
+    html += '<p>' + parseInline(l) + '</p>';
+  }
+  if (inCode) html += '<pre><code>' + escapeHtml(code.trim()) + '</code></pre>';
+  if (inList) html += '</' + lt + '>';
+  return html;
+}
+function parseInline(t) {
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+  t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:var(--primary);">$1</a>');
+  return t;
+}
+function escapeHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ===== Page switching =====
+function switchPage(pageId) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  var target = document.getElementById('page-' + pageId);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  var tabs = document.querySelectorAll('.nav-tab');
+  var map = {market:0, upload:1, my:2, admin:3, detail:0, 'detail-exe':0};
+  if (map[pageId] !== undefined) tabs[map[pageId]].classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function switchMyTab(tabId) {
+  document.querySelectorAll('.my-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('my-' + tabId).classList.add('active');
+  document.querySelectorAll('.my-tab').forEach(function(t) { t.classList.remove('active'); });
+  event.target.classList.add('active');
+}
+
+function switchAdminTab(tabId) {
+  document.querySelectorAll('.admin-panel').forEach(function(p) { p.style.display = 'none'; });
+  document.getElementById('admin-' + tabId).style.display = 'block';
+  document.querySelectorAll('.sidebar-item').forEach(function(s) { s.classList.remove('active'); });
+  event.target.classList.add('active');
+}
+
+function handleInstall() { alert('✅ 安装成功！'); }
+
+// Filter chips toggle
+document.querySelectorAll('.filter-bar .filter-chip').forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    this.closest('.filter-bar').querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+    this.classList.add('active');
+  });
+});
+
+// Drag & drop
+document.addEventListener('DOMContentLoaded', function() {
+  var zone = document.getElementById('upload-zone');
+  if (!zone) return;
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.style.borderColor = 'var(--primary)'; });
+  zone.addEventListener('dragleave', function(e) { e.preventDefault(); zone.style.borderColor = ''; });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault(); zone.style.borderColor = '';
+    if (e.dataTransfer.files.length > 0) {
+      document.getElementById('skill-file-input').files = e.dataTransfer.files;
+      handleFileUpload({target:{files:e.dataTransfer.files}});
+    }
+  });
+});
+</script>
+</body>
+</html>
